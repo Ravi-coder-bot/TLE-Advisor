@@ -23,6 +23,7 @@ export default function HomePage() {
     try {
       const res = await fetch(`/api/analysis?handle=${handle}`);
       const data = await res.json();
+      console.log(data);
       if (res.ok) {
         setResult(data);
       } else {
