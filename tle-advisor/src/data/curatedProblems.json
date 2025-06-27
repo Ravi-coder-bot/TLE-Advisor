@@ -1,0 +1,10 @@
+{
+  "greedy": [
+    { "name": "Cut Ribbon", "link": "https://codeforces.com/problemset/problem/189/A", "rating": 1300 },
+    { "name": "Coins", "link": "https://codeforces.com/problemset/problem/160/A", "rating": 900 }
+  ],
+  "dp": [
+    { "name": "Frog 1", "link": "https://atcoder.jp/contests/dp/tasks/dp_a", "rating": 1200 },
+    { "name": "Boredom", "link": "https://codeforces.com/problemset/problem/455/A", "rating": 1500 }
+  ]
+}

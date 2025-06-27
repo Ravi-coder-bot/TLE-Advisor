@@ -1,103 +1,222 @@
-import Image from "next/image";
+'use client';
 
-export default function Home() {
+import { useState } from 'react';
+
+const tabs = ['📊 Stats', '🧠 AI Plan', '📘 Rated Problems'];
+
+export default function HomePage() {
+  const [handle, setHandle] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [tab, setTab] = useState(0);
+  const [result, setResult] = useState<any>(null);
+  const [aiPlan, setAIPlan] = useState('');
+  const [ratedProblems, setRatedProblems] = useState<any[]>([]);
+  const [error, setError] = useState('');
+
+  const fetchAnalysis = async () => {
+    setLoading(true);
+    setError('');
+    setResult(null);
+    setAIPlan('');
+    setRatedProblems([]);
+
+    try {
+      const res = await fetch(`/api/analysis?handle=${handle}`);
+      const data = await res.json();
+      if (res.ok) {
+        setResult(data);
+      } else {
+        setError(data.error || 'Something went wrong');
+      }
+    } catch {
+      setError('Failed to connect to backend.');
+    }
+
+    setLoading(false);
+  };
+
+  const fetchAIPlan = async () => {
+    if (!result) return;
+    const weak = result.stats.weakTopics.map((w: any) => w.tag).join(',');
+    const res = await fetch(`/api/advice?handle=${handle}&weak=${weak}`);
+    const data = await res.json();
+    setAIPlan(data.suggestion);
+  };
+
+  const fetchRatedSet = async () => {
+    const res = await fetch(`/api/problemset?min=1200&max=1500&tags=dp,greedy`);
+    const data = await res.json();
+    setRatedProblems(data.problems || []);
+  };
+
   return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm/6 text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-[family-name:var(--font-geist-mono)] font-semibold">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
+    <main className="min-h-screen bg-gray-100 px-4 py-10">
+      <div className="max-w-4xl mx-auto space-y-6">
+        <header className="text-center">
+          <h1 className="text-4xl font-bold text-blue-700 mb-2">TLE Advisor</h1>
+          <p className="text-gray-600">AI-Powered Codeforces Problem Recommendation</p>
+        </header>
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+        <div className="flex flex-col sm:flex-row items-center gap-4 justify-center">
+          <input
+            type="text"
+            value={handle}
+            onChange={(e) => setHandle(e.target.value)}
+            placeholder="Enter Codeforces handle"
+            className="px-4 py-2 border rounded w-full sm:w-72 text-black"
+          />
+          <button
+            onClick={fetchAnalysis}
+            disabled={!handle || loading}
+            className="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded disabled:opacity-50"
           >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+            {loading ? 'Analyzing...' : 'Analyze'}
+          </button>
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
-    </div>
+
+        {error && <p className="text-red-600 text-center">{error}</p>}
+
+        {result && (
+          <>
+            {/* Tabs */}
+            <div className="flex gap-4 justify-center mt-6">
+              {tabs.map((label, i) => (
+                <button
+                  key={i}
+                  className={`px-4 py-2 rounded font-medium ${
+                    tab === i ? 'bg-blue-600 text-white' : 'bg-white text-gray-800 border'
+                  }`}
+                  onClick={() => {
+                    setTab(i);
+                    if (i === 1 && !aiPlan) fetchAIPlan();
+                    if (i === 2 && ratedProblems.length === 0) fetchRatedSet();
+                  }}
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
+
+            {/* Tab Content */}
+            <div className="mt-8">
+              {/* 📊 Stats Tab */}
+              {tab === 0 && (
+                <>
+                  <h2 className="text-xl font-bold mb-4 text-center">
+                    📈 Performance for <span className="text-blue-700">@{result.handle}</span>
+                  </h2>
+
+                  {/* Tag Stats */}
+                  <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-6">
+                    {Object.entries(result.stats.tagStats).map(
+                      ([tag, data]: [string, any]) => (
+                        <div
+                          key={tag}
+                          className="bg-white p-4 rounded-lg shadow border border-gray-200"
+                        >
+                          <h4 className="font-semibold capitalize mb-1">{tag}</h4>
+                          <p>Solved: {data.count}</p>
+                          <p className="text-sm text-gray-500">
+                            Avg Rating:{' '}
+                            {data.ratings.length
+                              ? Math.round(data.ratingSum / data.ratings.length)
+                              : 'N/A'}
+                          </p>
+                        </div>
+                      )
+                    )}
+                  </div>
+
+                  {/* Weak Topics */}
+                  <div className="mb-6">
+                    <h3 className="text-lg font-bold mb-2">⚠️ Weak Topics</h3>
+                    <ul className="list-disc list-inside text-gray-800">
+                      {result.stats.weakTopics.length > 0 ? (
+                        result.stats.weakTopics.map((t: any, i: number) => (
+                          <li key={i}>
+                            <strong className="capitalize">{t.tag}</strong> — {t.count} solved
+                          </li>
+                        ))
+                      ) : (
+                        <li>None found 🎉</li>
+                      )}
+                    </ul>
+                  </div>
+
+                  {/* Suggestions */}
+                  <div>
+                    <h3 className="text-lg font-bold mb-2">🧠 CP-31 Suggestions</h3>
+                    {result.suggestions.length > 0 ? (
+                      result.suggestions.map((item: any) => (
+                        <div
+                          key={item.tag}
+                          className="mb-4 p-4 bg-white rounded shadow border"
+                        >
+                          <h4 className="text-lg font-semibold capitalize mb-2">
+                            {item.tag}
+                          </h4>
+                          <ul className="list-disc list-inside text-blue-600">
+                            {item.problems.map((prob: any, i: number) => (
+                              <li key={i}>
+                                <a
+                                  href={prob.link}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="hover:underline"
+                                >
+                                  {prob.name} ({prob.rating})
+                                </a>
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      ))
+                    ) : (
+                      <p>No suggestions 💤</p>
+                    )}
+                  </div>
+                </>
+              )}
+
+              {/* 🧠 AI Tab */}
+              {tab === 1 && (
+                <div className="bg-yellow-50 p-6 rounded shadow border border-yellow-300">
+                  <h3 className="text-xl font-bold mb-2">AI’s Study Plan</h3>
+                  {aiPlan ? (
+                    <p className="whitespace-pre-line text-gray-800">{aiPlan}</p>
+                  ) : (
+                    <p className="text-gray-500">Generating...</p>
+                  )}
+                </div>
+              )}
+
+              {/* 📘 Rated Problems Tab */}
+              {tab === 2 && (
+                <div>
+                  <h3 className="text-xl font-bold mb-4">📘 Problems [1200–1500]</h3>
+                  {ratedProblems.length > 0 ? (
+                    <ul className="space-y-2">
+                      {ratedProblems.map((p, i) => (
+                        <li key={i}>
+                          <a
+                            href={`https://codeforces.com/problemset/problem/${p.contestId}/${p.index}`}
+                            target="_blank"
+                            className="text-blue-700 hover:underline"
+                          >
+                            {p.name} ({p.rating})
+                          </a>
+                        </li>
+                      ))}
+                    </ul>
+                  ) : (
+                    <p className="text-gray-500">Loading rated problems...</p>
+                  )}
+                </div>
+              )}
+            </div>
+          </>
+        )}
+      </div>
+    </main>
   );
 }
