@@ -1,8 +1,9 @@
 'use client';
 
 import { useState } from 'react';
+import SpotlightCard from '@/components/spolightCard';
 
-const tabs = ['📊 Stats', '🧠 AI Plan', '📘 Rated Problems'];
+const tabs = ['Stats', ' AI Plan', ' Rated Problems'];
 
 export default function HomePage() {
   const [handle, setHandle] = useState('');
@@ -54,8 +55,11 @@ export default function HomePage() {
     <main className="min-h-screen bg-gray-100 px-4 py-10">
       <div className="max-w-4xl mx-auto space-y-6">
         <header className="text-center">
-          <h1 className="text-4xl font-bold text-blue-700 mb-2">TLE Advisor</h1>
-          <p className="text-gray-600">AI-Powered Codeforces Problem Recommendation</p>
+          <div className='flex items-center justify-center '>
+            <h1 className="text-5xl font-bold bg-gradient-to-r from-purple-500 via-blue-400 to-pink-400 bg-clip-text text-transparent mb-2">TLE Advisor</h1>
+          </div>
+          
+          <p className=" bg-gradient-to-r from-purple-500 via-blue-400 to-pink-400 bg-clip-text text-transparent mb-2 ">AI-Powered Codeforces Problem Recommendation</p>
         </header>
 
         <div className="flex flex-col sm:flex-row items-center gap-4 justify-center">
@@ -69,23 +73,26 @@ export default function HomePage() {
           <button
             onClick={fetchAnalysis}
             disabled={!handle || loading}
-            className="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded disabled:opacity-50"
+            className="bg-gradient-to-r from-purple-500 via-blue-400 to-pink-400  hover:bg-purple-600 text-white px-5 py-2 rounded disabled:opacity-50"
           >
             {loading ? 'Analyzing...' : 'Analyze'}
           </button>
         </div>
 
         {error && <p className="text-red-600 text-center">{error}</p>}
+        <SpotlightCard className="custom-spotlight-card text-center font-extrabold text-xl"  spotlightColor="rgba(168, 85, 247, 0.4)">
+       Analyze your skills and compete in better way 
+     </SpotlightCard>
 
         {result && (
           <>
             {/* Tabs */}
-            <div className="flex gap-4 justify-center mt-6">
+            <div className="flex gap-4 justify-center mt-6 ">
               {tabs.map((label, i) => (
                 <button
                   key={i}
-                  className={`px-4 py-2 rounded font-medium ${
-                    tab === i ? 'bg-blue-600 text-white' : 'bg-white text-gray-800 border'
+                  className={`px-4 py-2  font-medium rounded-md ${
+                    tab === i ? 'bg-purple-600 text-white' : 'bg-white text-gray-800 border'
                   }`}
                   onClick={() => {
                     setTab(i);
@@ -96,42 +103,22 @@ export default function HomePage() {
                   {label}
                 </button>
               ))}
-            </div>
+            </div>  
 
             {/* Tab Content */}
             <div className="mt-8">
               {/* 📊 Stats Tab */}
               {tab === 0 && (
                 <>
-                  <h2 className="text-xl font-bold mb-4 text-center">
-                    📈 Performance for <span className="text-blue-700">@{result.handle}</span>
+                  <h2 className="text-xl font-bold mb-4 text-center text-neutral-600">
+                     Performance for <span className="bg-gradient-to-r from-purple-500 via-blue-500 to-pink-500 bg-clip-text text-transparent mb-2 ">@{result.handle}</span>
                   </h2>
 
-                  {/* Tag Stats */}
-                  <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-6">
-                    {Object.entries(result.stats.tagStats).map(
-                      ([tag, data]: [string, any]) => (
-                        <div
-                          key={tag}
-                          className="bg-white p-4 rounded-lg shadow border border-gray-200"
-                        >
-                          <h4 className="font-semibold capitalize mb-1">{tag}</h4>
-                          <p>Solved: {data.count}</p>
-                          <p className="text-sm text-gray-500">
-                            Avg Rating:{' '}
-                            {data.ratings.length
-                              ? Math.round(data.ratingSum / data.ratings.length)
-                              : 'N/A'}
-                          </p>
-                        </div>
-                      )
-                    )}
-                  </div>
-
                   {/* Weak Topics */}
-                  <div className="mb-6">
-                    <h3 className="text-lg font-bold mb-2">⚠️ Weak Topics</h3>
-                    <ul className="list-disc list-inside text-gray-800">
+                  <div className="mb-6 border border-neutral-500 p-4 rounded-3xl bg-neutral-300">
+                    <h3 className="text-lg font-bold mb-2 text-purple-500 px-2">Weak Topics</h3>
+                   <div className ="bg-neutral-400 rounded-3xl p-4">
+                    <ul className="list-disc list-inside text-gray-800 ">
                       {result.stats.weakTopics.length > 0 ? (
                         result.stats.weakTopics.map((t: any, i: number) => (
                           <li key={i}>
@@ -142,11 +129,13 @@ export default function HomePage() {
                         <li>None found 🎉</li>
                       )}
                     </ul>
+                   </div>
+                    
                   </div>
 
                   {/* Suggestions */}
-                  <div>
-                    <h3 className="text-lg font-bold mb-2">🧠 CP-31 Suggestions</h3>
+                  <div className='border border-neutral-500 bg-neutral-300 rounded-r-3xl p-4 mb-6 '>
+                    <h3 className="text-lg font-bold mb-2 "> CP-31 Suggestions</h3>
                     {result.suggestions.length > 0 ? (
                       result.suggestions.map((item: any) => (
                         <div
@@ -174,6 +163,27 @@ export default function HomePage() {
                       ))
                     ) : (
                       <p>No suggestions 💤</p>
+                    )}
+                  </div>
+
+                  {/* Tag Stats */}
+                  <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-6">
+                    {Object.entries(result.stats.tagStats).map(
+                      ([tag, data]: [string, any]) => (
+                        <div
+                          key={tag}
+                          className="bg-white p-4 rounded-lg shadow border border-purple-200"
+                        >
+                          <h4 className="font-semibold capitalize mb-1 text-purple-500">{tag}</h4>
+                          <p className='text-neutral-500 font-extrabold'>Solved: {data.count}</p>
+                          <p className="text-sm text-gray-500">
+                            Avg Rating:{' '}
+                            {data.ratings.length
+                              ? Math.round(data.ratingSum / data.ratings.length)
+                              : 'N/A'}
+                          </p>
+                        </div>
+                      )
                     )}
                   </div>
                 </>
