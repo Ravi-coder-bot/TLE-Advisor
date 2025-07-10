@@ -39,10 +39,36 @@ export default function HomePage() {
 
   const fetchAIPlan = async () => {
     if (!result) return;
-    const weak = result.stats.weakTopics.map((w: any) => w.tag).join(',');
-    const res = await fetch(`/api/advice?handle=${handle}&weak=${weak}`);
-    const data = await res.json();
-    setAIPlan(data.suggestion);
+    
+    // Create detailed topic data with average ratings
+    const topicData = result.stats.weakTopics.map((weakTopic: any) => {
+      // Find corresponding data in tagStats for average rating
+      const tagStat = result.stats.tagStats[weakTopic.tag];
+      const avgRating = tagStat && tagStat.ratings.length > 0 
+        ? Math.round(tagStat.ratingSum / tagStat.ratings.length)
+        : 0;
+      
+      return {
+        tag: weakTopic.tag,
+        count: weakTopic.count,
+        avgRating: avgRating
+      };
+    });
+
+    // Create URL parameters
+    const params = new URLSearchParams({
+      handle: handle,
+      topics: JSON.stringify(topicData)
+    });
+
+    try {
+      const res = await fetch(`/api/advice?${params.toString()}`);
+      const data = await res.json();
+      setAIPlan(data.suggestion);
+    } catch (error) {
+      console.error('Error fetching AI plan:', error);
+      setAIPlan('Failed to generate AI plan. Please try again.');
+    }
   };
 
   const fetchRatedSet = async () => {
@@ -126,28 +152,43 @@ export default function HomePage() {
  
  {result.stats.weakTopics.length > 0 ? (
    <div className="grid gap-3">
-     {result.stats.weakTopics.map((t: any, i: number) => (
-       <div key={i} className="bg-white/80 backdrop-blur-sm border border-red-200 rounded-xl p-4 hover:shadow-md transition-all duration-200 hover:bg-white/90">
-         <div className="flex items-center justify-between">
-           <div className="flex items-center">
-             <div className="w-3 h-3 bg-red-400 rounded-full mr-3"></div>
-             <span className="font-semibold text-gray-800 capitalize text-lg">{t.tag}</span>
+     {result.stats.weakTopics.map((t: any, i: number) => {
+       const tagStat = result.stats.tagStats[t.tag];
+       const avgRating = tagStat && tagStat.ratings.length > 0 
+         ? Math.round(tagStat.ratingSum / tagStat.ratings.length)
+         : 0;
+       
+       return (
+         <div key={i} className="bg-white/80 backdrop-blur-sm border border-red-200 rounded-xl p-4 hover:shadow-md transition-all duration-200 hover:bg-white/90">
+           <div className="flex items-center justify-between">
+             <div className="flex items-center">
+               <div className="w-3 h-3 bg-red-400 rounded-full mr-3"></div>
+               <span className="font-semibold text-gray-800 capitalize text-lg">{t.tag}</span>
+             </div>
+             <div className="flex items-center space-x-2">
+               <div className="bg-red-100 px-3 py-1 rounded-full">
+                 <span className="text-red-700 font-medium text-sm">{t.count} solved</span>
+               </div>
+               <div className="bg-blue-100 px-3 py-1 rounded-full">
+                 <span className="text-blue-700 font-medium text-sm">Avg: {avgRating || 'N/A'}</span>
+               </div>
+             </div>
            </div>
-           <div className="flex items-center bg-red-100 px-3 py-1 rounded-full">
-             <span className="text-red-700 font-medium text-sm">{t.count} solved</span>
+           <div className="mt-2 ml-6">
+             <div className="w-full bg-red-200 rounded-full h-2">
+               <div 
+                 className="bg-gradient-to-r from-red-400 to-red-500 h-2 rounded-full transition-all duration-300" 
+                 style={{width: `${Math.min((t.count / 10) * 100, 100)}%`}}
+               ></div>
+             </div>
+             <p className="text-xs text-gray-600 mt-1">
+               Focus on practicing more {t.tag} problems
+               {avgRating > 0 && ` (current average: ${avgRating})`}
+             </p>
            </div>
          </div>
-         <div className="mt-2 ml-6">
-           <div className="w-full bg-red-200 rounded-full h-2">
-             <div 
-               className="bg-gradient-to-r from-red-400 to-red-500 h-2 rounded-full transition-all duration-300" 
-               style={{width: `${Math.min((t.count / 10) * 100, 100)}%`}}
-             ></div>
-           </div>
-           <p className="text-xs text-gray-600 mt-1">Focus on practicing more {t.tag} problems</p>
-         </div>
-       </div>
-     ))}
+       );
+     })}
    </div>
  ) : (
    <div className="bg-green-50 border-2 border-green-200 rounded-xl p-6 text-center">
@@ -217,7 +258,7 @@ export default function HomePage() {
               {/* 🧠 AI Tab */}
               {tab === 1 && (
                 <div className="bg-yellow-50 p-6 rounded shadow border border-yellow-300">
-                  <h3 className="text-xl font-bold mb-2">AI’s Study Plan</h3>
+                  <h3 className="text-xl font-bold mb-2">AI's Study Plan</h3>
                   {aiPlan ? (
                     <p className="whitespace-pre-line text-gray-800">{aiPlan}</p>
                   ) : (

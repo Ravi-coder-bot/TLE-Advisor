@@ -7,11 +7,15 @@ export async function GET(req: NextRequest) {
   try {
     const url = new URL(req.url);
     const handle = url.searchParams.get('handle');
-    const weakTopics = url.searchParams.get('weak')?.split(',').filter(Boolean) || [];
+    const topicsParam = url.searchParams.get('topics');
 
     // Validate required parameters
     if (!handle) {
       return NextResponse.json({ error: 'Missing handle parameter' }, { status: 400 });
+    }
+
+    if (!topicsParam) {
+      return NextResponse.json({ error: 'Missing topics parameter' }, { status: 400 });
     }
 
     // Validate environment variable
@@ -20,15 +24,40 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: 'Server configuration error' }, { status: 500 });
     }
 
+    // Parse topics data
+    let topicsData;
+    try {
+      topicsData = JSON.parse(topicsParam);
+    } catch (error) {
+      return NextResponse.json({ error: 'Invalid topics data format' }, { status: 400 });
+    }
+
     // Sanitize inputs
     const sanitizedHandle = handle.trim();
-    const sanitizedTopics = weakTopics.map(topic => topic.trim()).filter(Boolean);
+
+    // Create detailed topic analysis for the prompt
+    const topicAnalysis = topicsData.map((topic: any) => {
+      return `• ${topic.tag}: ${topic.count} problems solved, average rating: ${topic.avgRating || 'N/A'}`;
+    }).join('\n');
 
     const prompt = `
-You are a competitive programming coach.
-The user with Codeforces handle "${sanitizedHandle}" is weak in the following topics: ${sanitizedTopics.length > 0 ? sanitizedTopics.join(', ') : 'general programming'}.
-Generate a personalized 10-day competitive programming plan, including topic focus and recommended rated problems each day.
-Format the response in a structured way with clear daily breakdowns.
+You are a competitive programming coach analyzing a Codeforces user's performance.
+
+User Handle: ${sanitizedHandle}
+
+Weak Topics Analysis:
+${topicAnalysis}
+
+Based on this analysis, create a personalized 10-day competitive programming improvement plan. For each day, provide:
+1. Focus topic(s) from the weak areas
+2. Specific problem rating ranges to target
+3. Number of problems to solve
+4. Key concepts to review
+5. Practice strategy tips
+
+Consider the user's current average rating in each topic when suggesting problem difficulties. If they have a low average rating in a topic, start with easier problems and gradually increase difficulty.
+
+Format your response with clear day-by-day breakdown and actionable advice.
 `;
 
     const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
@@ -45,7 +74,7 @@ Format the response in a structured way with clear daily breakdowns.
     return NextResponse.json({ 
       suggestion: suggestion.trim(),
       handle: sanitizedHandle,
-      weakTopics: sanitizedTopics
+      analyzedTopics: topicsData
     });
 
   } catch (error: any) {
