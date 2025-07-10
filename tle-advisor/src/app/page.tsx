@@ -115,23 +115,48 @@ export default function HomePage() {
                   </h2>
 
                   {/* Weak Topics */}
-                  <div className="mb-6 border border-neutral-500 p-4 rounded-3xl bg-neutral-300">
-                    <h3 className="text-lg font-bold mb-2 text-purple-500 px-2">Weak Topics</h3>
-                   <div className ="bg-neutral-400 rounded-3xl p-4">
-                    <ul className="list-disc list-inside text-gray-800 ">
-                      {result.stats.weakTopics.length > 0 ? (
-                        result.stats.weakTopics.map((t: any, i: number) => (
-                          <li key={i}>
-                            <strong className="capitalize">{t.tag}</strong> — {t.count} solved
-                          </li>
-                        ))
-                      ) : (
-                        <li>None found 🎉</li>
-                      )}
-                    </ul>
-                   </div>
-                    
-                  </div>
+                {/* Weak Topics */}
+<div className="mb-6 bg-gradient-to-br from-red-50 to-orange-50 border-2 border-red-200 rounded-2xl p-6 backdrop-blur-sm shadow-lg">
+ <div className="flex items-center mb-4">
+   <div className="w-8 h-8 bg-red-500 rounded-full flex items-center justify-center mr-3">
+    
+   </div>
+   <h3 className="text-xl font-bold text-red-700">Areas for Improvement</h3>
+ </div>
+ 
+ {result.stats.weakTopics.length > 0 ? (
+   <div className="grid gap-3">
+     {result.stats.weakTopics.map((t: any, i: number) => (
+       <div key={i} className="bg-white/80 backdrop-blur-sm border border-red-200 rounded-xl p-4 hover:shadow-md transition-all duration-200 hover:bg-white/90">
+         <div className="flex items-center justify-between">
+           <div className="flex items-center">
+             <div className="w-3 h-3 bg-red-400 rounded-full mr-3"></div>
+             <span className="font-semibold text-gray-800 capitalize text-lg">{t.tag}</span>
+           </div>
+           <div className="flex items-center bg-red-100 px-3 py-1 rounded-full">
+             <span className="text-red-700 font-medium text-sm">{t.count} solved</span>
+           </div>
+         </div>
+         <div className="mt-2 ml-6">
+           <div className="w-full bg-red-200 rounded-full h-2">
+             <div 
+               className="bg-gradient-to-r from-red-400 to-red-500 h-2 rounded-full transition-all duration-300" 
+               style={{width: `${Math.min((t.count / 10) * 100, 100)}%`}}
+             ></div>
+           </div>
+           <p className="text-xs text-gray-600 mt-1">Focus on practicing more {t.tag} problems</p>
+         </div>
+       </div>
+     ))}
+   </div>
+ ) : (
+   <div className="bg-green-50 border-2 border-green-200 rounded-xl p-6 text-center">
+     <div className="text-4xl mb-2">🎉</div>
+     <h4 className="text-lg font-semibold text-green-700 mb-1">Excellent Work!</h4>
+     <p className="text-green-600">No weak areas detected. Keep up the great work!</p>
+   </div>
+ )}
+</div>
 
                   {/* Suggestions */}
                   <div className='border border-neutral-500 bg-neutral-300 rounded-r-3xl p-4 mb-6 '>
