@@ -41,23 +41,46 @@ export async function GET(req: NextRequest) {
     }).join('\n');
 
     const prompt = `
-You are a competitive programming coach analyzing a Codeforces user's performance.
+You are an expert competitive programming coach and Codeforces analyst.
 
-User Handle: ${sanitizedHandle}
+Analyze the performance of the user with the following handle: ${sanitizedHandle}.
 
-Weak Topics Analysis:
+Below is the topic-wise weakness analysis of the user (including their average rating per topic and areas of low accuracy or slow submission times):
 ${topicAnalysis}
+Your task:
+Based on this data, create a personalized and adaptive 10-day competitive programming improvement plan.
 
-Based on this analysis, create a personalized 10-day competitive programming improvement plan. For each day, provide:
-1. Focus topic(s) from the weak areas
-2. Specific problem rating ranges to target
-3. Number of problems to solve
-4. Key concepts to review
-5. Practice strategy tips
+For each of the 10 days, include:
+Focus Topic(s): Choose from the user's weakest topics.
 
-Consider the user's current average rating in each topic when suggesting problem difficulties. If they have a low average rating in a topic, start with easier problems and gradually increase difficulty.
+Rating Range to Practice:
 
-Format your response with clear day-by-day breakdown and actionable advice.
+Start at the user's current average rating in the topic.
+
+Gradually increase up to +200 rating by Day 10 to build confidence and progression.
+
+Trending Problems to Practice:
+
+Suggest 2-3 popular or recent Codeforces problems on that topic within the rating range.
+
+Prefer problems that are tagged well, have high upvotes, and are commonly recommended for learning.
+
+Key Concepts to Review:
+
+Mention the core theoretical concepts, techniques, and edge cases in that topic.
+
+Practice Strategy Tips:
+
+Provide tactical tips for improvement, like "brute-force first, then optimize", "analyze editorial after 45 mins", or "draw state transitions for DP".
+
+Additional instructions:
+Prefer topics where the user has lowest average rating or lowest accuracy in early days.
+
+Progressively introduce harder variations (e.g., from "basic DFS" to "DFS with backtracking").
+
+Output the plan in markdown format, day-by-day, with clear formatting, subheadings, and bullet points.
+
+Be smart, concise, and practical — the goal is to improve rating while building confidence.
 `;
 
     const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
